@@ -5,6 +5,19 @@
 var equation = new Array();
 var varCounter = 0;
 
+
+var settings = 
+{
+    button : 
+        {
+            height : 30,
+            width : 30,
+            padding : 10
+        },
+    imgPath : "images/"
+
+}
+
 function num2Str(x)
 {
     var y;
@@ -35,7 +48,8 @@ function num2Str(x)
 
 var calc =
 {
-    newVariable : function()
+    
+    addVariable : function ()
     {
         var l = num2Str(varCounter+1);
         varCounter++;
@@ -49,16 +63,14 @@ var calc =
         equation.push({
             type: "function",
             name: str,
-            func : calc[str].func
+            func : calc[str]
         })
     },
-    not : 
+    not : function (x)
     {
-        func: function (x)
-        {
-            return !x;
-        }
-    },
+        return !x;
+    }
+    ,
     implies : function (a,b)
     {
         if(a)
@@ -80,21 +92,25 @@ var calc =
 }
 
 //Array Symbology
-var functions = 
+var buttons = 
     {
         addVariable : 
         {
             text: "New Variable",
             width: 2,
             height: 1,
-            func: calc.newVariable
+            func: calc.addVariable,
+            name : "addVariable"
+            
         },
         not : 
         {
             text: "&not",
             width: 1,
             height : 1,
-            func: calc.newfunc("not")
+            func: calc.newfunc,
+            img: "NOT.jpg",
+            name: "not"
         }
     }
 
@@ -110,8 +126,45 @@ var functions =
 //generate web
 
 //generate calculator
+function generateCalc()
+{
+    var buttonWidth, buttonHeight; //button;
+    var img;
+    for(var key in buttons)
+    {
+        button = buttons[key];
+        
+        img = $("<img src='" + settings.imgPath + button.img + "'/>")
+            .css({
+                height      : ((settings.button.height + settings.button.padding) * (button.height - 1)) + settings.button.height - 2,
+                width       : ((settings.button.width + settings.button.padding) * (button.width - 1)) + settings.button.width - 2,
+                top         : "1px",
+                left        : "1px",
+                position    : "relative"
+            });
+        $("<div id='"+ button.name + "'/>")
+            .css({
+                height  : ((settings.button.height + settings.button.padding) * (button.height - 1)) + settings.button.height,
+                width   : ((settings.button.width + settings.button.padding) * (button.width - 1)) + settings.button.width 
+            })
+            .append(img)
+            .addClass("button")
+            .appendTo("#calculator")
+            .mousedown(function(e){
+                $(this).css("border-style", "inset");
+                
+            })
+            .mouseup(function(e){
+                $(this).css("border-style", "outset")
+                var id = $(this).attr("id");
+                calc[id]();
+                //buttons[key].func();
+                console.log(id);
+            });
+    }
+    
+}
 
 
-//bind controls
 
-
+window.onload=generateCalc;

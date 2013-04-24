@@ -22,36 +22,17 @@ root {
 
 .button
 {
-    height: 30px;
-    width: 30px;
+    
     border: 1px outset;
-    position: absolute;
+    
     background-color: #FACC43;
     color: darkgreen;
+    display: inline-block;
+    margin : 10px;
+    margin-right : 0px;
+    margin-bottom: 0px;
+    
+    
     
 }
 
-.r1
-{
-    top: 10px;
-}
-
-.c1
-{
-    left: 10px;
-}
-
-.c2
-{
-    left:50px;
-}
-
-.c3
-{
-    left:90px;
-}
-
-.doubleWide
-{
-    width: 70px;
-}
