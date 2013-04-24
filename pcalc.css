@@ -1,0 +1,57 @@
+/* 
+    Document   : pcalc
+    Created on : Apr 23, 2013, 5:01:07 PM
+    Author     : jasonn
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+#calculator
+{
+    height: 200px;
+    width: 500px;
+    background-color: #EDB91C;
+    position: absolute;
+    top:100px;
+    left: 100px;
+}
+
+.button
+{
+    height: 30px;
+    width: 30px;
+    border: 1px outset;
+    position: absolute;
+    background-color: #FACC43;
+    color: darkgreen;
+    
+}
+
+.r1
+{
+    top: 10px;
+}
+
+.c1
+{
+    left: 10px;
+}
+
+.c2
+{
+    left:50px;
+}
+
+.c3
+{
+    left:90px;
+}
+
+.doubleWide
+{
+    width: 70px;
+}
