@@ -27,12 +27,30 @@ root {
     
     background-color: #FACC43;
     color: darkgreen;
-    display: inline-block;
+    float: left;
     margin : 10px;
     margin-right : 0px;
     margin-bottom: 0px;
+    cursor: pointer;
     
     
     
 }
+#variableList
+{
+    position: absolute;
+    right: 100px;
+    top: 100px;
+    width: 200px;
+    background-color: lightgray;
+}
 
+.singleCharButton
+{
+    position: relative;
+    vertical-align: middle;
+    width: 30px;
+    text-align: center;
+    font-size: 22px;
+    top: 1px;
+}

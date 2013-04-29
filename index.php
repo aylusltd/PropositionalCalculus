@@ -9,9 +9,9 @@
         <script src="pcalc.js"></script>
     </head>
     <body>
-        
+        <div id="formula"></div>
         <div id="calculator">
-            <div id="screen"></div><div id="results"></div>
+            
             
         </div>
         <table id="variableList"></table>
