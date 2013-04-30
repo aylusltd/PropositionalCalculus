@@ -1,165 +1,33 @@
-/* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-var equation = new Array();
-var varCounter = 0;
-
-
-var settings = 
+var model = 
 {
-    button : 
-        {
-            height : 30,
-            width : 30,
-            padding : 10,
-            rows : 5,
-            columns : 4
-        },
-    imgPath : "images/"
-
-}
-
-function num2Str(x)
-{
-    var y;
-    var target;
-    
-    //determine how many letters needed (i.e. AA, AAA, etc..)
-    var len = Math.floor(Math.log(x) / Math.log(26))+1;
-    
-    
-    //generate array
-    var a = [];
-    for(i=len; i>0; i--)
+    settings : 
     {
-        target = Math.pow(26,(i-1));
-        y = Math.floor(x/target);
-        x=x-(y* target);
-        a[i-1]=String.fromCharCode(y + 64);
-    }
-    
-    
-    //stringify array
-    var str =a.reverse().join("")
-    
-    
-    //return string
-    return str;
-}
-
-var calc =
-{
-    
-    existingVar : function (str)
-    {
-        //do stuff
-        equation.push({
-            type: "variable",
-            letter : str
-        });
-        $("#formula").append("<span> " + str + " </span>");
+        button : 
+            {
+                height : 30,
+                width : 30,
+                padding : 10,
+                rows : 5,
+                columns : 4
+            },
+        imgPath : "images/"
     },
-    addVariable : function ()
+    equation : new Array(),
+    varCounter : 0,
+    nest : 
     {
-        var l = num2Str(varCounter+1);
-        varCounter++;
-        equation.push({
-            type:"variable",
-            letter : l
-        });
-        
-        var d = $("<div />")
-            .html(l)
-            .addClass("button")
-            .attr({
-                "data-type"     : "variable",
-                "id"            : l,
-                "data-valid"    : false
-            })
-            .mousedown(function(e){
-                if($(this).attr("data-valid") != "false")
-                    $(this).css("border-style", "inset");
-                
-            })
-            .mouseup(function(e){
-                $(this).css("border-style", "outset")
-                var id = $(this).attr("id");
-                if ($(this).attr("data-valid") != "false")
-                    calc.existingVar(id);
-                
-                
-                inactivate();
-            });
-        
-        var v = $("<td />").append(d);
-        var u = $("<option value=undefined/>").html("Undefined");
-        var t = $("<option value=true/>").html("True");
-        var f = $("<option value=false/>").html("False");
-        var selector = $("<select />").append(u);
-        selector.append(t);
-        selector.append(f);
-        var val = $("<td />").append(selector);
-        var tr = $("<tr />").append(v);
-        tr.append(val);
-        $("#variableList").append(tr)
-        $("#formula").append("<span> " + l + " </span>");
-        
+        level : 0,
+        implied : 0
     },
-    
-    newfunc : function(str)
+    buttons : 
     {
-        equation.push({
-            type: "function",
-            name: str,
-            func : calc[str]
-        });
-        $("#formula").append("<span> " + buttons[str].symbol + " </span>")
-    },
-    not : function (x)
-    {
-        return !x;
-    }
-    ,
-    implies : function (a,b)
-    {
-        if(a)
-            return b;
-        return true;
-    },
-    NAND : function (a,b)
-    {
-        if(a && b)
-            return false;
-        return true;
-    },
-    eq : function (a,b)
-    {
-        if(a==b)
-            return true;
-        return false;
-    },
-    run : function ()
-    {
-        
-    },
-    clear : function ()
-    {
-        equation =[];
-        $("#formula").html("");
-        $("#variableList").html("");
-    }
-}
-
-//Array Symbology
-var buttons = 
-    {
+        //Move to Here
         addVariable : 
         {
             text: "New Variable",
             width: 2,
             height: 1,
-            func: calc.addVariable,
+            func: controller.addVariable,
             name : "addVariable",
             type : "variable"
             
@@ -169,18 +37,26 @@ var buttons =
             text: "Not",
             width: 1,
             height : 1,
-            func: calc.newfunc,
             img: "NOT.jpg",
             name: "not",
             type  : "function",
-            symbol : "&not"
+            symbol : "&not",
+            func : function(x)
+            {
+                return !x;
+            }
         },
         implies : 
         {
             text: "Implies",
             width: 1,
             height : 1,
-            func: calc.newfunc,
+            func: function (a,b)
+            {
+                if(a)
+                    return b;
+                return true;
+            },
             img: "implies.jpg",
             name: "implies",
             type  : "function",
@@ -191,7 +67,12 @@ var buttons =
             text: "NAND",
             width: 1,
             height : 1,
-            func: calc.newfunc,
+            func: function (a,b)
+            {
+                if(a && b)
+                    return false;
+                return true;
+            },
             img: "NAND.jpg",
             name: "NAND",
             type  : "function",
@@ -222,11 +103,190 @@ var buttons =
             text : "Clear",
             width : 2,
             height : 1,
-            func : calc.clear,
+            func : controller.clear,
             name : "clear"
             
+        },
+        eq :
+        {
+            text : "Equals",
+            width : 1,
+            height : 1,
+            func : function (a,b)
+            {
+                if(a==b)
+                    return true;
+                return false;
+            },
+            name : "eq",
+            symbol : "=",
+            type: "function"
         }
+  
+    
     }
+}
+
+
+
+
+//The controller
+var controller =
+{
+    variables : 
+    {
+        num2Str : function (x)
+        {
+            var y;
+            var target;
+
+            //determine how many letters needed (i.e. AA, AAA, etc..)
+            var len = Math.floor(Math.log(x) / Math.log(26))+1;
+
+
+            //generate array
+            var a = [];
+            for(i=len; i>0; i--)
+            {
+                target = Math.pow(26,(i-1));
+                y = Math.floor(x/target);
+                x=x-(y* target);
+                a[i-1]=String.fromCharCode(y + 64);
+            }
+
+
+            //stringify array
+            var str =a.reverse().join("")
+
+
+            //return string
+            return str;
+        }
+    },
+    formula : 
+    {
+        //Do Stuff
+        unnestNot : function ()
+        {
+            if(model.equation[model.equation.length - 2].name == "not")
+            {
+                nestLevel =  nestLevel - impliedNest;
+                impliedNest = 0;
+            }
+        },
+    },
+    
+    existingVar : function (str)
+    {
+        //do stuff
+        model.equation.push({
+            type: "variable",
+            letter : str,
+            nestLevel : nestLevel
+        });
+        $("#formula").append("<span> " + str + " </span>");
+        controller.unnestNot();
+    },
+    
+    addVariable : function ()
+    {
+        var l = num2Str(varCounter+1);
+        varCounter++;
+        model.equation.push({
+            type:"variable",
+            letter : l,
+            nestLevel : nestLevel
+        });
+        
+        var d = $("<div />")
+            .html(l)
+            .addClass("button")
+            .attr({
+                "data-type"     : "variable",
+                "id"            : l,
+                "data-valid"    : false
+            })
+            .mousedown(function(e){
+                if($(this).attr("data-valid") != "false")
+                    $(this).css("border-style", "inset");
+                
+            })
+            .mouseup(function(e){
+                $(this).css("border-style", "outset")
+                var id = $(this).attr("id");
+                if ($(this).attr("data-valid") != "false")
+                    controller.existingVar(id);
+                
+                
+                inactivate();
+            });
+        
+        var v = $("<td />").append(d);
+        var u = $("<option value=undefined/>").html("Undefined");
+        var t = $("<option value=true/>").html("True");
+        var f = $("<option value=false/>").html("False");
+        var selector = $("<select />").append(u);
+        selector.append(t);
+        selector.append(f);
+        var val = $("<td />").append(selector);
+        var tr = $("<tr />").append(v);
+        tr.append(val);
+        $("#variableList").append(tr)
+        $("#formula").append("<span> " + l + " </span>");
+        controller.unnestNot();
+    },
+    newfunc : function(str)
+    {
+        if(str == "not")
+        {
+            nestLevel++;
+            impliedNest++;
+        }
+        model.equation.push({
+            type: "function",
+            name: str,
+            func : calc[str],
+            nestLevel : nestLevel
+        });
+        
+        $("#formula").append("<span> " + buttons[str].symbol + " </span>")
+    },
+    not : function (x)
+    {
+        return !x;
+    },
+    implies : function (a,b)
+    {
+        if(a)
+            return b;
+        return true;
+    },
+    NAND : function (a,b)
+    {
+        if(a && b)
+            return false;
+        return true;
+    },
+    eq : function (a,b)
+    {
+        if(a==b)
+            return true;
+        return false;
+    },
+    run : function ()
+    {
+        
+    },
+    clear : function ()
+    {
+        model.equation =[];
+        $("#formula").html("");
+        $("#variableList").html("");
+    }
+}
+
+//Array Symbology
+
 
 
 //make function
@@ -259,9 +319,9 @@ function makeValid(button)
 //make buttons inactive
 function inactivate()
 {
-    var length = equation.length;
-    var type = equation[length -1 ].type;
-    var name =equation[length -1 ].name;
+    var length = model.equation.length;
+    var type = model.equation[length -1 ].type;
+    var name =model.equation[length -1 ].name;
     
     makeValid($(".button"));
     
@@ -305,57 +365,79 @@ function inactivate()
         
 }
 
-//generate calculator
-function generateCalc()
-{
-    var buttonWidth, buttonHeight; //button;
-    var img;
-    for(var key in buttons)
+//generate calculator (The View)
+var view = {
+    generateCalc : function()
     {
-        button = buttons[key];
-        if(button.img)
-            img = $("<img src='" + settings.imgPath + button.img + "'/>")
+        var buttonWidth, buttonHeight; //button;
+        var img;
+        var button;
+        var settings = model.settings;
+        
+        for(var key in model.buttons)
+        {
+            button = model.buttons[key];
+            if(button.img)
+                img = $("<img src='" + settings.imgPath + button.img + "'/>")
+                    .css({
+                        height      : ((settings.button.height + settings.button.padding) * (button.height - 1)) + settings.button.height - 2,
+                        width       : ((settings.button.width + settings.button.padding) * (button.width - 1)) + settings.button.width - 2,
+                        top         : "1px",
+                        left        : "1px",
+                        position    : "relative"
+                    });
+            else
+                img = $("<span />").html(button.text).css("font-size", "12px");
+            $("<div id='"+ button.name + "'/>")
                 .css({
-                    height      : ((settings.button.height + settings.button.padding) * (button.height - 1)) + settings.button.height - 2,
-                    width       : ((settings.button.width + settings.button.padding) * (button.width - 1)) + settings.button.width - 2,
-                    top         : "1px",
-                    left        : "1px",
-                    position    : "relative"
+                    height  : ((settings.button.height + settings.button.padding) * (button.height - 1)) + settings.button.height,
+                    width   : ((settings.button.width + settings.button.padding) * (button.width - 1)) + settings.button.width 
+                })
+                .attr({
+                    "data-type" : button.type,
+                    "title"     : button.text
+                })
+                .append(img)
+                .addClass("button")
+                .appendTo("#calculator")
+                .mousedown(function(e){
+                    if($(this).attr("data-valid") != "false")
+                        $(this).css("border-style", "inset");
+
+                })
+                .mouseup(function(e){
+                    $(this).css("border-style", "outset")
+                    var id = $(this).attr("id");
+                    if($(this).attr("data-type") == "function" && $(this).attr("data-valid") != "false")
+                        controller.newfunc(id);
+                    else if ($(this).attr("data-valid") != "false")
+                        calc[id]();
+
+                    console.log(id);
+                    inactivate();
                 });
-        else
-            img = $("<span />").html(button.text).css("font-size", "12px");
-        $("<div id='"+ button.name + "'/>")
-            .css({
-                height  : ((settings.button.height + settings.button.padding) * (button.height - 1)) + settings.button.height,
-                width   : ((settings.button.width + settings.button.padding) * (button.width - 1)) + settings.button.width 
-            })
-            .attr({
-                "data-type" : button.type,
-                "title"     : button.text
-            })
-            .append(img)
-            .addClass("button")
-            .appendTo("#calculator")
-            .mousedown(function(e){
-                if($(this).attr("data-valid") != "false")
-                    $(this).css("border-style", "inset");
-                
-            })
-            .mouseup(function(e){
-                $(this).css("border-style", "outset")
-                var id = $(this).attr("id");
-                if($(this).attr("data-type") == "function" && $(this).attr("data-valid") != "false")
-                    calc.newfunc(id);
-                else if ($(this).attr("data-valid") != "false")
-                    calc[id]();
-                
-                console.log(id);
-                inactivate();
-            });
-    }
+        }
     
+        
+    },
+        buttons : 
+        {
+            makeInvalid : function(button)
+            {
+                $(button).attr("data-valid",false).css({
+                            "color"     : "red",
+                            "cursor"    : "default"
+                        });
+            },
+            makeValid : function(button)
+            {
+                $(button).attr("data-valid", true).css({
+                    "color"     : "darkgreen",
+                    "cursor"    : "pointer"
+                });
+            }
+        }
 }
 
 
-
-window.onload=generateCalc;
+window.onload=view.generateCalc;
